@@ -12,7 +12,7 @@ import android.util.Log;
 import java.io.IOException;
 
 /**
- * Created by mateus on 27/01/2017.
+ * Created by Mateus on 27/01/2017.
  */
 
 public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener,
@@ -220,8 +220,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         removeAudioFocus();
     }
 
+    //Becoming noisy
+    private BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //pause audio on ACTION_AUDIO_BECOMING_NOISY
+            pauseMedia();
+            buildNotification(PlaybackStatus.PAUSED);
+        }
+    };
 
-
-
-
+    private void registerBecomingNoisyReceiver() {
+        //register after getting audio focus
+        IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        registerReceiver(becomingNoisyReceiver, intentFilter);
+    }
 }
