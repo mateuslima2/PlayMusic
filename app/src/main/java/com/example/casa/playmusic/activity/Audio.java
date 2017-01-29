@@ -5,6 +5,8 @@ import android.os.Bundle;
 
 import com.example.casa.playmusic.R;
 
+import java.io.Serializable;
+
 public class Audio implements Serializable {
 
     private String data;

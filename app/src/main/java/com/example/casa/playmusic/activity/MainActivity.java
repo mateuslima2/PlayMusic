@@ -1,16 +1,31 @@
 package com.example.casa.playmusic.activity;
 
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.casa.playmusic.R;
 import com.example.casa.playmusic.activity.Audio;
+import com.example.casa.playmusic.service.MediaPlayerService;
+
+import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
     private MediaPlayerService player;
     boolean serviceBound = false;
     ArrayList<Audio> audioList;
+    public static final String Broadcast_PLAY_NEW_AUDIO = "com.valdioveliu.valdio.audioplayer.PlayNewAudio";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +55,26 @@ public class MainActivity extends Activity {
         }
     };
 
-    private void playAudio(String media) {
+    private void playAudio(int audioIndex) {
         //Check is service is active
         if (!serviceBound) {
+            //Store Serializable audioList to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudio(audioList);
+            storage.storeAudioIndex(audioIndex);
+
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            playerIntent.putExtra("media", media);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
+            //Store the new audioIndex to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudioIndex(audioIndex);
+
             //Service is active
-            //Send media with BroadcastReceiver
+            //Send a broadcast to the service -> PLAY_NEW_AUDIO
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadcastIntent);
         }
     }
 
